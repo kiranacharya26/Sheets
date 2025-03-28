@@ -19,14 +19,15 @@ const Spreadsheet = () => {
   const handleCellChange = (row, col, value) => {
   setData((prev) => {
     let newData = { ...prev, [`${col}${row}`]: value };
+
     if (value.startsWith("=")) {
       try {
-        const formula = value.substring(1);
-        const result = formula.replace(/([A-Z]+)(\d+)/g, (match, colRef, rowRef) => {
+        const formula = value.substring(1).replace(/([A-Z]+)(\d+)/g, (match, colRef, rowRef) => {
           const cellKey = `${colRef}${rowRef}`;
-          return prev[cellKey] || 0; 
+          return prev[cellKey] || 0;
         });
-        newData[`${col}${row}`] = eval(result);
+        const result = new Function(`return ${formula}`)();
+        newData[`${col}${row}`] = result;
       } catch (error) {
         console.error("Invalid formula:", value);
       }
@@ -35,6 +36,7 @@ const Spreadsheet = () => {
     return newData;
   });
 };
+
 
   const Row = useCallback(({ index, style }) => {
     return (
